@@ -1,6 +1,7 @@
 import os
 import joblib
 from sklearn.ensemble import RandomForestClassifier
+from src.data.load_data import load_dataset
 
 def train_model(X_train, y_train):
     """

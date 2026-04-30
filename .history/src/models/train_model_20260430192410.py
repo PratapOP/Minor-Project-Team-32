@@ -2,6 +2,7 @@ import os
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 
+
 def train_model(X_train, y_train):
     """
     Trains Random Forest model
