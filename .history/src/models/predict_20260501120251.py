@@ -87,8 +87,8 @@ def predict(input_dict, user_name="User"):
     # 1. Prediction
     # ---------------------------
     probs = model.predict_proba(X_scaled)[0]
-    prediction = int(probs.argmax())
-    confidence = float(max(probs))
+prediction = int(probs.argmax())
+confidence = float(max(probs))
 
     # ---------------------------
     # 2. SHAP Explanation
@@ -121,7 +121,6 @@ def predict(input_dict, user_name="User"):
 
     return {
         "prediction": prediction,
-        "confidence": round(confidence, 3),
         "top_features": top_features,
         "llm_output": llm_output
     }

@@ -152,11 +152,11 @@ if st.button("🔍 Analyze Stress"):
             }
 
             st.markdown(f"""
-            <div style="padding:15px; border-radius:10px; background-color:#1f3d2b;">
-            <h3 style="color:white;">Stress Level: {level}</h3>
-            <p style="color:#ccc;">Confidence: {result['confidence']*100:.1f}%</p>
-            </div>
-            """, unsafe_allow_html=True)
+                <div style="padding:15px; border-radius:10px; background-color:#1f3d2b;">
+                <h3 style="color:white;">Stress Level: {level}</h3>
+                <p style="color:#ccc;">Confidence: {result['confidence']*100:.1f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
 
             # ---------------------------
             # SHAP

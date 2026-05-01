@@ -121,7 +121,6 @@ def predict(input_dict, user_name="User"):
 
     return {
         "prediction": prediction,
-        "confidence": round(confidence, 3),
         "top_features": top_features,
         "llm_output": llm_output
     }

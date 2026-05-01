@@ -49,47 +49,7 @@ Recommendations:
     return prompt.strip()
 
 
-import re
 
-def clean_output(text):
-    """
-    Remove ANSI escape sequences and weird characters
-    """
-
-    # Remove ANSI escape sequences
-    text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
-
-    # Remove weird brackets like [3D][K
-    text = re.sub(r'\[[0-9;]*[A-Za-z]', '', text)
-
-    # Remove non-printable characters
-    text = re.sub(r'[^\x20-\x7E\n]', '', text)
-
-    return text.strip()
-
-
-def run_llama(prompt):
-    try:
-        result = subprocess.run(
-            ["ollama", "run", "llama3", prompt],
-            text=True,
-            capture_output=True,
-            encoding="utf-8",
-            errors="ignore"
-        )
-
-        output = result.stdout
-
-        # 🔥 CLEAN PROPERLY
-        output = clean_output(output)
-
-        if not output:
-            return "No response generated."
-
-        return output
-
-    except Exception as e:
-        return f"LLM Error: {str(e)}"
 
 
 # ---------------------------

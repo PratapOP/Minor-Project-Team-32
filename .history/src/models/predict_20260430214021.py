@@ -1,15 +1,11 @@
 import os
 import joblib
 import pandas as pd
-import numpy as np
 
 from src.explainability.shap_explainer import compute_shap_values
 from src.llm.llama_reasoner import generate_llm_response
 
 
-# ---------------------------
-# Load Artifacts
-# ---------------------------
 def load_artifacts():
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
@@ -20,16 +16,14 @@ def load_artifacts():
     return model, scaler, feature_columns
 
 
-# ---------------------------
-# Prepare Input
-# ---------------------------
 def prepare_input(input_dict, feature_columns, scaler):
     """
     Converts user input into model-ready format
     """
+
     df = pd.DataFrame([input_dict])
 
-    # Ensure correct column order
+    # Ensure column order consistency
     df = df.reindex(columns=feature_columns, fill_value=0)
 
     # Scale
@@ -38,45 +32,22 @@ def prepare_input(input_dict, feature_columns, scaler):
     return df_scaled, df
 
 
-# ---------------------------
-# Extract SHAP Top Features (ROBUST)
-# ---------------------------
 def extract_top_features(shap_values, feature_columns, top_n=5):
     """
-    Handles all SHAP output formats safely
+    Extract top SHAP features for predicted class
     """
 
-    shap_values = np.array(shap_values)
-
-    # Normalize shape
-    if shap_values.ndim == 3:
-        shap_values = shap_values[0][0]
-    elif shap_values.ndim == 2:
-        shap_values = shap_values[0]
-    elif shap_values.ndim == 1:
-        pass
-    else:
-        raise ValueError("Unexpected SHAP shape")
-
-    importance = np.abs(shap_values)
-
-    # Ensure scalar values
-    importance = [float(x) for x in importance]
+    importance = abs(shap_values).mean(axis=0)
 
     feature_importance = list(zip(feature_columns, importance))
-
     feature_importance.sort(key=lambda x: x[1], reverse=True)
 
     return feature_importance[:top_n]
 
 
-# ---------------------------
-# Prediction Pipeline
-# ---------------------------
 def predict(input_dict, user_name="User"):
     """
-    Full pipeline:
-    Input → Prediction → SHAP → LLM
+    Full prediction pipeline
     """
 
     model, scaler, feature_columns = load_artifacts()
@@ -86,29 +57,24 @@ def predict(input_dict, user_name="User"):
     # ---------------------------
     # 1. Prediction
     # ---------------------------
-    probs = model.predict_proba(X_scaled)[0]
-    prediction = int(probs.argmax())
-    confidence = float(max(probs))
+    prediction = model.predict(X_scaled)[0]
 
     # ---------------------------
     # 2. SHAP Explanation
     # ---------------------------
     shap_values, _ = compute_shap_values(model, X_scaled)
 
-    # Handle different SHAP outputs
+    # Handle both SHAP formats
     if isinstance(shap_values, list):
         shap_for_class = shap_values[prediction]
     else:
         shap_for_class = shap_values
 
+    # Extract top features
     top_features = extract_top_features(
         shap_for_class,
         feature_columns
     )
-
-    # Safety fallback
-    if not top_features:
-        top_features = [("No significant feature", 0.0)]
 
     # ---------------------------
     # 3. LLM Reasoning
@@ -120,22 +86,15 @@ def predict(input_dict, user_name="User"):
     )
 
     return {
-        "prediction": prediction,
-        "confidence": round(confidence, 3),
+        "prediction": int(prediction),
         "top_features": top_features,
         "llm_output": llm_output
     }
 
 
-# ---------------------------
-# TEST RUN
-# ---------------------------
 if __name__ == "__main__":
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    feature_columns = joblib.load(os.path.join(base_path, "models", "feature_columns.pkl"))
-
-    # Dummy input
-    sample_input = {col: 1 for col in feature_columns}
+    # Dummy input (must match dataset features after encoding)
+    sample_input = {col: 1 for col in joblib.load("models/feature_columns.pkl")}
 
     result = predict(sample_input, "Abhiuday")
 
