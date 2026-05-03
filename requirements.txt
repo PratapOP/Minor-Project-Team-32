@@ -1,0 +1,10 @@
+pandas
+scikit-learn
+joblib
+streamlit
+opencv-python
+shap
+plotly
+python-dotenv
+matplotlib
+numpy
