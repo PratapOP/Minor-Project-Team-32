@@ -1,0 +1,13 @@
+streamlit
+joblib
+pandas
+numpy
+scikit-learn
+xgboost
+shap
+plotly
+textblob
+openai
+opencv-python
+mediapipe
+flask

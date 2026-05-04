@@ -8,16 +8,24 @@ from src.llm.llama_reasoner import generate_llm_response
 
 
 # ---------------------------
-# Load Artifacts
+# Global Cache for Performance
 # ---------------------------
+_MODEL_CACHE = None
+_SCALER_CACHE = None
+_COLUMNS_CACHE = None
+
 def load_artifacts():
+    global _MODEL_CACHE, _SCALER_CACHE, _COLUMNS_CACHE
+    
+    if _MODEL_CACHE is not None:
+        return _MODEL_CACHE, _SCALER_CACHE, _COLUMNS_CACHE
+
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    _MODEL_CACHE = joblib.load(os.path.join(base_path, "models", "stress_model.pkl"))
+    _SCALER_CACHE = joblib.load(os.path.join(base_path, "models", "scaler.pkl"))
+    _COLUMNS_CACHE = joblib.load(os.path.join(base_path, "models", "feature_columns.pkl"))
 
-    model = joblib.load(os.path.join(base_path, "models", "stress_model.pkl"))
-    scaler = joblib.load(os.path.join(base_path, "models", "scaler.pkl"))
-    feature_columns = joblib.load(os.path.join(base_path, "models", "feature_columns.pkl"))
-
-    return model, scaler, feature_columns
+    return _MODEL_CACHE, _SCALER_CACHE, _COLUMNS_CACHE
 
 
 # ---------------------------
