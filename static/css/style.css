@@ -675,3 +675,46 @@ select:focus, input:focus, textarea:focus {
     text-align: center;
     padding: 20px;
 }
+
+/* About & Enhanced Analytics Styles */
+.about-grid {
+    margin-top: 30px;
+}
+
+.about-grid .card {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.about-grid h3 {
+    color: var(--navy-dark);
+    margin-bottom: 15px;
+}
+
+.about-grid p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    opacity: 0.8;
+}
+
+.progress-bar-v2 {
+    height: 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+}
+
+.institutional-grid .card h4 {
+    font-size: 0.9rem;
+    color: var(--navy-dark);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
