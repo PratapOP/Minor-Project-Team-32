@@ -630,3 +630,48 @@ select:focus, input:focus, textarea:focus {
     .result-grid-v2 { display: block !important; }
     .report-area { margin-top: 30px; border: none; padding: 0; }
 }
+/* Markdown & Report Styles */
+.report-card {
+    background: var(--white);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+}
+
+.report-content {
+    color: var(--text-main);
+    line-height: 1.8;
+}
+
+.report-content h3 {
+    font-size: 1.1rem;
+    color: var(--orange);
+    margin: 25px 0 10px;
+    border-bottom: 1px solid rgba(245, 126, 62, 0.1);
+    padding-bottom: 5px;
+}
+
+.report-content p {
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.report-content ul {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.report-content li {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.report-content strong {
+    color: var(--navy-dark);
+    font-weight: 700;
+}
+
+.placeholder-msg {
+    opacity: 0.5;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}

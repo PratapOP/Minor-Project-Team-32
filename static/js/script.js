@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.add('active');
             tabContents.forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            if (['simulation', 'benchmarks', 'lab'].includes(tabId)) loadResearchData();
+            if (tabId === 'benchmarks') renderBenchmarks();
         });
     });
 
@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await res.json();
             if (result.success) {
                 capturedFacialData = result.data;
-                captureStatus.innerHTML = `Biomarkers: <span style="color:#2ecc71;">ACTIVE</span>`;
+                const mode = result.data.biometric_sync || 'ACTIVE';
+                captureStatus.innerHTML = `Biomarkers: <span style="color:#2ecc71;">${mode}</span>`;
                 captureBtn.classList.add('success');
             }
         } catch (e) { captureStatus.innerText = "Camera Sync Failed."; }
@@ -87,9 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const confVal = document.getElementById('conf-val');
             if (confVal) confVal.innerText = (data.confidence * 100).toFixed(1);
             
-            const report = document.getElementById('llm-report');
-            if (report) report.innerHTML = marked.parse(data.llm_output || "");
-
             // 1. Render Waterfall (SHAP)
             renderWaterfall(data.top_features);
             
@@ -99,17 +97,72 @@ document.addEventListener('DOMContentLoaded', () => {
             // 3. Render Roadmap
             renderRoadmap(data.roadmap);
             
-            // 4. Update SHAP List
+            // 4. Update Peer Analytics Spectrum
+            const userScore = data.confidence * 100;
+            updateSpectrum(userScore);
+            
+            // 5. Update SHAP List
             const list = document.getElementById('shap-list');
             if (list) {
-                list.innerHTML = (data.top_features || []).map(f => `
+                list.innerHTML = (data.top_features || []).map(f => {
+                    const intensity = f[1] > 0.05 ? "Critical" : (f[1] > 0.01 ? "High" : "Baseline");
+                    return `
                     <div class="shap-item">
-                        <span>${f[0]}</span>
-                        <strong>${(f[1] * 100).toFixed(1)}%</strong>
+                        <span class="feat-name">${f[0]}</span>
+                        <span class="feat-val">${(f[1] * 100).toFixed(1)}%</span>
+                        <span class="feat-intensity">${intensity}</span>
                     </div>
-                `).join('');
+                `}).join('');
+            }
+
+            // 6. Render AI Clinical Report
+            const reportContainer = document.getElementById('llm-report-content');
+            if (reportContainer && data.llm_report) {
+                reportContainer.innerHTML = marked.parse(data.llm_report);
+                document.getElementById('ai-report-box').classList.remove('hidden');
             }
         } catch (e) { console.error("Rendering Error:", e); }
+    }
+
+
+    function updateSpectrum(score) {
+        const marker = document.getElementById('spectrum-marker');
+        if (marker) marker.style.left = `${score}%`;
+        const perc = document.getElementById('percentile-val');
+        if (perc) perc.innerText = `${Math.round(score)}th`;
+        const standing = document.getElementById('rank-val');
+        if (standing) standing.innerText = score > 75 ? 'Critical' : (score > 40 ? 'Moderate' : 'Stable');
+    }
+
+    let benchmarkChart;
+    function renderBenchmarks() {
+        const ctx = document.getElementById('benchmark-chart');
+        if (!ctx) return;
+        if (benchmarkChart) benchmarkChart.destroy();
+        
+        const labels = Array.from({length: 20}, (_, i) => i * 5);
+        const gaussian = labels.map(x => Math.exp(-Math.pow(x-50, 2) / 450) * 100);
+        
+        benchmarkChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cohort Distribution',
+                    data: gaussian,
+                    borderColor: '#1B264F',
+                    backgroundColor: 'rgba(27, 38, 79, 0.05)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { display: false }, x: { title: { display: true, text: 'Stress Magnitude Index' } } }
+            }
+        });
     }
 
     let waterfallChart, radarChart;
@@ -156,12 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('roadmap-container');
         if (!container) return;
         container.innerHTML = (roadmap || []).map(r => `
-            <div class="roadmap-item">
-                <div class="roadmap-icon">${r.icon || '🛡️'}</div>
-                <div class="roadmap-text">
-                    <h4>${r.title}</h4>
-                    <p>${r.advice}</p>
-                </div>
+            <div class="roadmap-card">
+                <div class="icon">${r.icon || '🛡️'}</div>
+                <h4>${r.title}</h4>
+                <p>${r.advice}</p>
             </div>
         `).join('');
     }

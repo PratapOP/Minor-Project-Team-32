@@ -6,10 +6,11 @@ def launch_app():
     """
     Launches the StressIntel PRO Flask application.
     """
-    print("🚀 Initializing StressIntel PRO Institutional System...")
-    print("📂 Project: Minor Project Team 32")
-    print("🔍 Model: Research-Grade XGBoost Ensemble")
+    print("Initializing StressIntel PRO Institutional System...")
+    print("Project: Minor Project Team 32")
+    print("Model: Research-Grade XGBoost Ensemble")
     print("--------------------------------------------------")
+
     
     # Path to the Flask app
     app_path = os.path.join(os.getcwd(), "app.py")
