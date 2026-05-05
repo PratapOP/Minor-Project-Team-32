@@ -17,9 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tabContents.forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
 
-            // Load data if switching to trends or lab
-            if (tabId === 'trends' || tabId === 'lab') {
+            // Load data if switching to specialized labs
+            if (tabId === 'simulation' || tabId === 'benchmarks' || tabId === 'lab') {
                 loadResearchData();
+                if (tabId === 'benchmarks') setTimeout(renderBenchmarks, 100);
             }
         });
     });
@@ -293,6 +294,62 @@ document.addEventListener('DOMContentLoaded', () => {
             simStatus.className = `badge ${levels[data.prediction].toLowerCase()}`;
             
         } catch (e) { console.error("Sim error", e); }
+    }
+
+    let benchmarkChart = null;
+    function renderBenchmarks() {
+        const ctx = document.getElementById('benchmark-chart').getContext('2d');
+        if (benchmarkChart) benchmarkChart.destroy();
+
+        // Generate Gaussian Bell Curve Data
+        const labels = [];
+        const data = [];
+        const mean = 50;
+        const stdDev = 15;
+        
+        for (let i = 0; i <= 100; i += 2) {
+            labels.push(i);
+            const prob = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((i - mean) / stdDev, 2));
+            data.push(prob);
+        }
+
+        const history = JSON.parse(localStorage.getItem('stress_history') || '[]');
+        const userScore = history.length > 0 ? history[history.length - 1].score : 50;
+
+        benchmarkChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Population Density',
+                    data: data,
+                    fill: true,
+                    backgroundColor: 'rgba(27, 38, 79, 0.1)',
+                    borderColor: 'rgba(27, 38, 79, 0.5)',
+                    tension: 0.4,
+                    pointRadius: 0
+                }, {
+                    label: 'YOUR POSITION',
+                    data: labels.map(l => l === Math.round(userScore / 2) * 2 ? Math.max(...data) : null),
+                    borderColor: '#F57E3E',
+                    pointRadius: 8,
+                    pointBackgroundColor: '#F57E3E',
+                    showLine: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { display: false },
+                    x: { title: { display: true, text: 'Stress Magnitude Index' } }
+                }
+            }
+        });
+
+        document.getElementById('percentile-val').innerText = `${Math.round(userScore)}th`;
+        document.getElementById('rank-val').innerText = userScore > 70 ? 'High Risk' : (userScore > 40 ? 'Moderate' : 'Stable');
     }
 
     async function loadResearchData() {

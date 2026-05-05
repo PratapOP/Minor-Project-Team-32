@@ -40,6 +40,10 @@
                         <i class="fas fa-flask"></i>
                         Simulation Lab
                     </li>
+                    <li class="nav-item" data-tab="benchmarks">
+                        <i class="fas fa-users-viewfinder"></i>
+                        Peer Analytics
+                    </li>
                     <li class="nav-item" data-tab="lab">
                         <i class="fas fa-microscope"></i>
                         Research Lab
@@ -325,6 +329,38 @@
                         </button>
                         <p style="font-size: 0.8rem; margin-top: 15px; opacity: 0.7;">
                             Live inference using XGBoost + Institutional Dataset.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: PEER ANALYTICS -->
+            <section id="benchmarks" class="tab-content">
+                <header>
+                    <h2>Institutional Benchmarking</h2>
+                    <p>Compare your stress profile against the simulated institutional peer average.</p>
+                </header>
+                <div class="grid-layout">
+                    <div class="card glass">
+                        <h3><i class="fas fa-chart-area"></i> Population Distribution</h3>
+                        <div style="height: 300px;">
+                            <canvas id="benchmark-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card glass">
+                        <h3><i class="fas fa-medal"></i> Your Standpoint</h3>
+                        <div class="benchmark-stats">
+                            <div class="stat-item">
+                                <span class="label">Relative Percentile</span>
+                                <span class="value" id="percentile-val">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Risk Status</span>
+                                <span class="value" id="rank-val">Pending</span>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8rem; margin-top: 20px; opacity: 0.7;">
+                            This analysis uses Gaussian distribution models across a 1,000-peer synthetic cohort.
                         </p>
                     </div>
                 </div>

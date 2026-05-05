@@ -1,60 +1,68 @@
 import pandas as pd
+import logging
+from sklearn.preprocessing import LabelEncoder
+import joblib
+from pathlib import Path
 
+# Configure logging
+logger = logging.getLogger(__name__)
 
 def preprocess_data(df):
     """
-    Cleans and prepares dataset for ML model
+    Cleans and encodes survey-based stress dataset
     """
+    try:
+        logger.info("Starting data preprocessing...")
+        
+        # 1. Remove duplicates
+        df = df.drop_duplicates()
 
-    df = df.copy()
+        # 2. Identify Target Column
+        target_col = "Which type of stress do you primarily experience?"
 
-    # ---------------------------
-    # 1. Handle Missing Values
-    # ---------------------------
-    df.dropna(inplace=True)
+        if target_col not in df.columns:
+            logger.error("Target column not found")
+            raise ValueError("Target column not found")
 
-    # ---------------------------
-    # 2. Rename Target Column
-    # ---------------------------
-    # Your dataset target column:
-    target_column = "Which type of stress do you primarily experience?"
+        # 3. Encode Target
+        target_encoder = LabelEncoder()
+        df["stress_level"] = target_encoder.fit_transform(df[target_col])
 
-    if target_column not in df.columns:
-        raise ValueError("Target column not found in dataset")
+        # Save mapping for viva/demo
+        base_path = Path(__file__).resolve().parent.parent.parent
+        encoder_path = base_path / "models" / "target_encoder.pkl"
+        joblib.dump(target_encoder, encoder_path)
+        
+        logger.info(f"Target Mapping: {dict(zip(target_encoder.classes_, range(len(target_encoder.classes_))))}")
 
-    df.rename(columns={target_column: "stress_level"}, inplace=True)
+        # Drop original target column
+        df = df.drop(columns=[target_col])
 
-    # ---------------------------
-    # 3. Encode Target Variable
-    # ---------------------------
-    # Convert categorical → numeric
-    df["stress_level"] = df["stress_level"].astype("category").cat.codes
+        # 4. Handle Duplicate Columns
+        df = df.loc[:, ~df.columns.duplicated()]
 
-    # ---------------------------
-    # 4. Encode Categorical Features
-    # ---------------------------
-    # Convert all object columns → numeric
-    for col in df.columns:
-        if df[col].dtype == "object":
-            df[col] = df[col].astype("category").cat.codes
+        # 5. Encode ALL categorical columns
+        for col in df.columns:
+            if df[col].dtype == "object":
+                le = LabelEncoder()
+                df[col] = le.fit_transform(df[col].astype(str))
 
-    # ---------------------------
-    # 5. Basic Validation
-    # ---------------------------
-    if "stress_level" not in df.columns:
-        raise ValueError("Target column missing after preprocessing")
+        # 6. Final Check
+        if "stress_level" not in df.columns:
+            raise ValueError("Target encoding failed")
 
-    if df.shape[0] == 0:
-        raise ValueError("Dataset empty after preprocessing")
-
-    return df
-
+        logger.info("Preprocessing completed successfully.")
+        return df
+    except Exception as e:
+        logger.exception("Error during preprocessing")
+        raise
 
 if __name__ == "__main__":
     from src.data.load_data import load_dataset
-
-    df = load_dataset()
-    df = preprocess_data(df)
-
-    print("Preprocessing Done")
-    print(df.head())
+    try:
+        df = load_dataset()
+        df_processed = preprocess_data(df)
+        print("\nPreprocessed Data Head:")
+        print(df_processed.head())
+    except Exception:
+        pass

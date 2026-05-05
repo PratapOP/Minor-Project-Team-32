@@ -1,4 +1,3 @@
-streamlit
 joblib
 pandas
 numpy
@@ -11,3 +10,4 @@ openai
 opencv-python
 mediapipe
 flask
+nltk
